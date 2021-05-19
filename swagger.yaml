@@ -1,0 +1,407 @@
+openapi: 3.0.0
+info:
+  title: Lms Api's
+  version: 1.0.0
+  description: 'Node.js application with typescript,javascript'
+servers:
+  - url: 'http://localhost:3000/api/v1'
+    description: SwaggerHub API Auto Mocking-LOCAL
+tags:
+  - name: Users
+    description: user api calls
+  - name: Admin
+    description: admin api calls
+  
+ 
+paths:
+  /users/google-signup:
+    post:
+      tags:
+        - "Users"
+      summary: "signup with google"
+      description: ""
+      operationId: "google_signup"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: "string"
+                  example: "uejicqysgxb93ns.mbjksx"
+                password:
+                  type: "string"
+                  example: "124sdf5#ca"
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "string"
+                    example: "1"
+                  name:
+                    type: "string"
+                    example: "nagasai"
+                  reportee:
+                    type: "string"
+                    example: "1"
+                  role:
+                    type: "string"
+                    example: "employee"
+                  email:
+                    type: "string"
+                    example: "nagasai@webileapps.com"
+                  phone:
+                    type: "string"
+                    example: "1234567890"
+                  is_active:
+                    type: "boolean"
+                    example: true
+                  total_leaves:
+                    type: "number"
+                    example: 11
+                  available_leaves:
+                    type: "number"
+                    example: 1
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "user not found"
+  /users/{id}/heirarchee:
+    get:
+      tags:
+        - "Users"
+      summary: "get Heirarchee of user"
+      description: "heirarchee level's"
+      operationId: "user_hierarchee"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of day user to update"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  heirarchee:
+                    type: 'object'
+                    example: { 
+                      level_1 : {id : '1', name: 'L1'},
+                      level_2 : {id : "2", name: 'L2' } 
+                    }
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "user not found"
+      security:
+        - access_token: []
+  /admin/{user_id}/assign_reportee:
+    post:
+      tags:
+        - "Admin"
+      summary: "assign reportee to user"
+      description: "Add reportee to the user "
+      operationId: "reportee_assign"
+      parameters: 
+       -  name: "user_id"
+          in: "path"
+          description: "Id of user to assign"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reportee:
+                  type: object
+                  example: {id : '123'}
+                  
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "integer"
+                    format: "int64"
+                  name:
+                    type: "string"
+                    example: "Vivan"
+                  email:
+                    type: "string"
+                    example: "vivan@gmail.com"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "user not found"
+      security:
+        - access_token: []
+  /admin/users/create:
+    post:
+      tags:
+        - "Admin"
+      summary: "creates the user"
+      description: "should be created by super admin"
+      operationId: "create_user"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    id:
+                      type: "integer"
+                      format: "int64"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "user not found"
+      security:
+        - access_token: []
+  /admin/users/{id}:
+    put:
+      tags:
+        - "Admin"
+      summary: "edits the user"
+      description: "should edited by super admin"
+      operationId: "edit_user"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of day user to update"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "integer"
+                  format: "int64"
+                manager:
+                  type: "string"
+                  example: "6asjdhbuysadjhfuyasdfyts"
+                role:
+                  type: "string"
+                  example: "manager"
+        description: "values to edit a user"
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "integer"
+                    format: "int64"
+                  name:
+                    type: "string"
+                    example: "Vivan"
+                  email:
+                    type: "string"
+                    example: "vivan@gmail.com"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "user not found"
+      security:
+        - access_token: []
+  /admin/users:
+    get:
+      tags:
+        - "Admin"
+      summary: "list of users"
+      description: "list of  all available users"
+      operationId: "user_list"
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    id:
+                      type: "integer"
+                      format: "int64"
+                    name:
+                      type: "string"
+                      example: "Vivan"
+                    email:
+                      type: "string"
+                      example: "vivan@gmail.com"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "No users"
+      security:
+        - access_token: []
+  /admin/users/sign-in:
+    post:
+      tags:
+        - "Admin"
+      summary: "This will login a user"
+      description: ""
+      operationId: "Logins a user"
+      responses:
+        "200":
+          $ref: "#/components/responses/Authentication"
+        "400":
+          description: "unable to signup please try again"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: "string"
+                  example: "vivan@gmail.com"
+                password:
+                  type: "string"
+                  example: "124sdf5#ca"
+  /admin/users/activate/{id}:
+    get:
+      tags:
+        - "Admin"
+      summary: "reactivate a user"
+      description: "user to reactivate"
+      operationId: "activate_user"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of user to update"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "integer"
+                    format: "int64"
+                  name:
+                    type: "string"
+                    example: "Vivan"
+                  email:
+                    type: "string"
+                    example: "vivan@gmail.com"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "No users"
+  /admin/users/deactivate/{id}:
+    get:
+      tags:
+        - "Admin"
+      summary: "deactivate a user"
+      description: "user to deactivate"
+      operationId: "deactivate_user"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of user to update"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "integer"
+                    format: "int64"
+                  name:
+                    type: "string"
+                    example: "Vivan"
+                  email:
+                    type: "string"
+                    example: "vivan@gmail.com"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "No users"
+      
+definitions:
+  BadRequest:
+    description: Bad Request
+    content:
+      application/json:
+        schema:
+          allOf:
+            - $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    token:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      description: Fail
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+    Success:
+      description: Success
+      type: object
+      properties:
+        data:
+          type: object
+        count:
+          type: number
+        error:
+          type: array
+        items:
+          type: string
