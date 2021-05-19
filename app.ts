@@ -1,18 +1,29 @@
 const express = require("express");
 import { Application, Request, Response, Handler } from "express";
 import { StatusCodes } from "http-status-codes";
+import * as mongoose from "mongoose";
 const YAML = require('yamljs');
+import * as usersRouter from "./users/router";
 
 const app: Application = express();
 
-const wait = (x: number = 2) => new Promise(resolve => setTimeout(resolve, x * 1000));
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = YAML.load('./apidoc/swagger.yaml');
 
+console.log(process.env.DB_URI);
+mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(_ => {
+        console.log("Connected to database successfully");
+    }).catch(err => {
+        console.log("Failed connecting to database");
+        console.error(err);
+    });
+
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+app.use("/users", usersRouter);
+
 app.get("/", async (req, res, next) => {
-    await wait();
     res.status(StatusCodes.OK).send({ "message": "Hello folks" });
 });
 

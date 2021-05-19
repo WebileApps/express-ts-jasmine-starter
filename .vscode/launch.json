@@ -15,7 +15,9 @@
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
-            // "sourceMaps": true
+            "env": {
+                "DB_URI": "mongodb://localhost/wa-users"
+            }
         }
     ]
 }
