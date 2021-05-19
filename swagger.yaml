@@ -14,7 +14,7 @@ tags:
   
  
 paths:
-  /users/google-signup:
+  /users/google-sign:
     post:
       tags:
         - "Users"
