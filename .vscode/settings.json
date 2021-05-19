@@ -1,0 +1,15 @@
+{
+    "editor.formatOnSave": true,
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true
+    },
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.DS_Store": true,
+        "**/*.js": { "when": "$(basename).ts"},
+        "**/*.js.map": true
+    },
+}
