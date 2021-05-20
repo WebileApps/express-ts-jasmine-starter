@@ -2,17 +2,16 @@ openapi: 3.0.0
 info:
   title: Lms Api's
   version: 1.0.0
-  description: 'Node.js application with typescript,javascript'
+  description: "Node.js application with typescript,javascript"
 servers:
-  - url: 'http://localhost:3000/api/v1'
+  - url: "http://localhost:3000/api/v1"
     description: SwaggerHub API Auto Mocking-LOCAL
 tags:
   - name: Users
     description: user api calls
   - name: Admin
     description: admin api calls
-  
- 
+
 paths:
   /users/google-sign:
     post:
@@ -99,11 +98,9 @@ paths:
                 type: "object"
                 properties:
                   heirarchee:
-                    type: 'object'
-                    example: { 
-                      0 : {id : '1', name: 'L1'},
-                      1 : {id : "2", name: 'L2' } 
-                    }
+                    type: "object"
+                    example:
+                      { 0: { id: "1", name: "L1" }, 1: { id: "2", name: "L2" } }
         400:
           description: "Invalid ID supplied"
         404:
@@ -117,8 +114,8 @@ paths:
       summary: "assign reportee to user"
       description: "Add reportee to the user "
       operationId: "reportee_assign"
-      parameters: 
-       -  name: "user_id"
+      parameters:
+        - name: "user_id"
           in: "path"
           description: "Id of user to assign"
           required: true
@@ -133,8 +130,8 @@ paths:
               properties:
                 reportee:
                   type: object
-                  example: {id : '123'}
-                  
+                  example: { id: "123" }
+
       responses:
         200:
           description: "successful operation"
@@ -164,20 +161,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "wa-user"
+                email:
+                  type: string
+                  example: "user@webileapps.com"
+                password:
+                  type: string
+                  example: "admin@123"
       responses:
         200:
           description: "successful operation"
           content:
             application/json:
               schema:
-                type: "array"
-                items:
-                  type: "object"
-                  properties:
-                    id:
-                      type: "integer"
-                      format: "int64"
+                type: object
+                properties:
+                  id:
+                    type: "integer"
+                    format: "int64"
         400:
           description: "Invalid ID supplied"
         404:
@@ -365,7 +370,7 @@ paths:
           description: "Invalid ID supplied"
         404:
           description: "No users"
-      
+
 definitions:
   BadRequest:
     description: Bad Request
@@ -373,7 +378,7 @@ definitions:
       application/json:
         schema:
           allOf:
-            - $ref: '#/components/schemas/Error'
+            - $ref: "#/components/schemas/Error"
 components:
   securitySchemes:
     token:
@@ -381,6 +386,36 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    User:
+      type: "object"
+      required:
+        - "name"
+        - "email"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        name:
+          type: "string"
+          example: "Vivan"
+        email:
+          type: "string"
+          example: "vivan@gmail.com"
+        google-signup:
+          type: "boolean"
+          example: "false"
+        google-Id:
+          type: "string"
+          example: "IHJJH7JJJ"
+        password:
+          type: "string"
+          example: "IHJJH7JJJ"
+        role:
+          type: "string"
+          example: "employee"
+        manager:
+          type: "string"
+          example: "5shdgfa6asjdfv6sasdfgsid"
     Error:
       description: Fail
       type: object
