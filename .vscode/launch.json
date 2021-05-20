@@ -16,7 +16,8 @@
                 "${workspaceFolder}/**/*.js"
             ],
             "env": {
-                "DB_URI": "mongodb://localhost/wa-users"
+                "DB_URI": "mongodb://localhost/wa-users",
+                "JWT_SECRET" :"lms-api-1234#$"
             }
         }
     ]

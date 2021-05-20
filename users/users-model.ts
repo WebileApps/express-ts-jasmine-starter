@@ -61,7 +61,7 @@ const UserSchema = new Schema(
             type: Date,
             default: new Date().setUTCHours(0, 0, 0, 0)
         },
-        manager: {
+        reportee: {
             type: Schema.Types.ObjectId,
             ref: "users",
             default: null

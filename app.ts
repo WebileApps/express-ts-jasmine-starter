@@ -4,6 +4,8 @@ import { StatusCodes } from "http-status-codes";
 import * as mongoose from "mongoose";
 const YAML = require('yamljs');
 import * as usersRouter from "./users/router";
+import * as adminRouter from "./admin/router";
+
 
 const app: Application = express();
 
@@ -20,8 +22,10 @@ mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology
     });
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use(express.json())
 
 app.use("/users", usersRouter);
+app.use("/admin", adminRouter);
 
 app.get("/", async (req, res, next) => {
     res.status(StatusCodes.OK).send({ "message": "Hello folks" });
