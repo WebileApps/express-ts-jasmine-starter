@@ -74,6 +74,40 @@ paths:
           description: "user not found"
       security:
         - access_token: []
+  /admin/login:
+    post:
+      tags:
+        - "Admin"
+      summary: "Admin login"
+      description: "Login as admin"
+      operationId: "admin_login"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "webileadmin@webileapps.com"
+                password:
+                  type: string
+                  example: webile@123
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/User"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "user not found"
+      security:
+        - access_token: []
   /admin/{user_id}/assign_reportee:
     post:
       tags:
@@ -352,6 +386,9 @@ components:
         role:
           type: "string"
           example: "employee"
+        token:
+          type: "string"
+          example: null
         reportee:
           type: "string"
           example: "5shdgfa6asjdfv6sasdfgsid"

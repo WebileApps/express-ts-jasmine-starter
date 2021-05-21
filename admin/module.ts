@@ -29,7 +29,7 @@ export async function login(req, res, next) {
     role,
     email,
     name,
-    token,
+    token:`Bearer ${token}`,
   });
 }
 
@@ -47,5 +47,32 @@ export const createDeafultUser = async function () {
       },
     ]);
     console.log("Default admin and user created and wokrouts created");
+  }
+};
+
+export const createUser = async (req, res, next) => {
+  const { name = "", email } = req.body;
+  try {
+    if (!email) {
+      throw new Error("Email id required to create user.");
+    }
+    const isUserExist = await UserModel.findOne({email}).exec();
+    if(isUserExist){
+      throw new Error('User already Exists')
+    }
+    const user = await UserModel.create([
+      {
+        name,
+        email,
+      },
+    ]);
+    if (!user) {
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send({ message: "Something went wrong." });
+    }
+    return res.status(StatusCodes.OK).send({ id: user.id });
+  } catch (err) {
+    return res.status(StatusCodes.BAD_REQUEST).send({ message: err.message });
   }
 };
