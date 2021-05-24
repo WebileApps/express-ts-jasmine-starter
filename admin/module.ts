@@ -4,7 +4,14 @@ const jwt = require("jsonwebtoken");
 import * as bcrypt from "bcryptjs";
 import { getUserById } from "../utils/auth";
 
-export async function login(req, res, next) {
+/**
+ * Super Admin Login
+ * @param req
+ * @param res
+ * @param next
+ * @returns Promise<any>
+ */
+export async function login(req, res, next): Promise<any> {
   const { email, password } = req.body;
   const user = await UserModel.findOne({ email }).exec();
 
@@ -34,7 +41,10 @@ export async function login(req, res, next) {
   });
 }
 
-export const createDeafultUser = async function () {
+/**
+ * Create default admin in database
+ */
+export const createDeafultUser = async () => {
   const user = await UserModel.findOne({
     email: "webileadmin@webileapps.com",
   }).exec();
@@ -51,7 +61,14 @@ export const createDeafultUser = async function () {
   }
 };
 
-export const createUser = async (req, res, next) => {
+/**
+ * Creating User By Super Admin
+ * @param req
+ * @param res
+ * @param next
+ * @returns Promise<any>
+ */
+export const createUser = async (req, res, next): Promise<any> => {
   const { name = "", email } = req.body;
   try {
     if (!email) {
@@ -78,7 +95,14 @@ export const createUser = async (req, res, next) => {
   }
 };
 
-export const getUsers = async (req, res, next) => {
+/**
+ * Fetching User list
+ * @param req
+ * @param res
+ * @param next
+ * @returns Promise<any>
+ */
+export const getUsers = async (req, res, next): Promise<any> => {
   try {
     const dbUsers = await UserModel.find({}).exec();
     const users = dbUsers
@@ -102,15 +126,22 @@ export const getUsers = async (req, res, next) => {
   }
 };
 
-export const getUserInfo = async (req, res, next) => {
+/**
+ * Fetch User By Id
+ * @param req
+ * @param res
+ * @param next
+ * @returns Promise<any>
+ */
+export const getUserInfo = async (req, res, next): Promise<any> => {
   try {
     const { id } = req.params;
-    if (!id) {
+    const user = await getUserById(id);
+    if (!user) {
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .send({ message: "User id not found" });
+        .send({ message: "Invalid user id supplied" });
     }
-    const user = await getUserById(id);
     const { role, active, reportee, email, name } = user;
     const payload = {
       id,
@@ -125,5 +156,143 @@ export const getUserInfo = async (req, res, next) => {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send({ message: err.message });
+  }
+};
+
+/**
+ * Activate User By Super Admin
+ * @param req
+ * @param res
+ * @param next
+ * @returns Promise<any>
+ */
+export const activateUser = async (req, res, next): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const user = await getUserById(id);
+    if (!user) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send({ message: "Invalid user id supplied" });
+    }
+    if (!!user.active) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send({ message: "User is already in active state" });
+    }
+
+    const updateStatus = await UserModel.findOneAndUpdate(
+      { _id: id },
+      { $set: { active: true } }
+    );
+    if (!updateStatus) {
+      throw new Error(
+        "Failed to activate user. Please try again after sometime "
+      );
+    }
+    return res
+      .status(StatusCodes.OK)
+      .send({ message: "User activated successfully" });
+  } catch (err) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send({ message: err.message || "Somehthing went wrong" });
+  }
+};
+
+/**
+ * Deactivate User By Super Admin
+ * @param req
+ * @param res
+ * @param next
+ * @returns Promise<any>
+ */
+export const deactivateUser = async (req, res, next): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const user = await getUserById(id);
+    if (!user) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send({ message: "Invalid user id supplied" });
+    }
+    if (!user.active) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send({ message: "User is already in deactivate state" });
+    }
+
+    const updateStatus = await UserModel.findOneAndUpdate(
+      { _id: id },
+      { $set: { active: false } }
+    );
+    if (!updateStatus) {
+      throw new Error(
+        "Failed to deactivate user. Please try again after sometime "
+      );
+    }
+    return res
+      .status(StatusCodes.OK)
+      .send({ message: "User deactivated successfully" });
+  } catch (err) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send({ message: err.message || "Somehthing went wrong" });
+  }
+};
+
+/**
+ * Assigning Reportee By Super Admin
+ * @param req
+ * @param res
+ * @param next
+ * @returns Promise<any>
+ */
+export const assignReportee = async (req, res, next): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const { reportee } = req.body;
+
+    if (!reportee && !!reportee?.id) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send({ message: "Reportee is required" });
+    }
+    if (id === reportee.id) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send({ message: "Cannot assign user has own reportee" });
+    }
+
+    const [user, reporteeInfo] = await Promise.all([
+      getUserById(id),
+      getUserById(reportee.id),
+    ]);
+
+    if (!user) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send({ message: "Invalid user id supplied" });
+    }
+    if (!reporteeInfo) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .send({ message: "Reportee not found" });
+    }
+
+    const updatedUserInfo = await UserModel.findOneAndUpdate(
+      { _id: id },
+      { $set: { reportee: reportee.id } }
+    );
+    if (!updatedUserInfo) {
+      throw new Error("Unable assign reportee.Please try again");
+    }
+    return res
+      .status(StatusCodes.OK)
+      .send({ message: "Reportee assigned successfully" });
+  } catch (err) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send({ message: err.message || "Somehting went wrong" });
   }
 };

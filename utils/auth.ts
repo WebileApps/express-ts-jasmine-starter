@@ -54,12 +54,7 @@ export const getUserById = async function (userId) {
   if (!Types.ObjectId.isValid(userId)) {
     return null;
   }
-  const user = await UserModel.findById(userId, {
-    password: 0,
-    active: 0,
-    google_signup: 0,
-    googleId: 0,
-  })
+  const user = await UserModel.findById(userId)
     .populate([{ path: "manager", select: "id name email" }])
     .exec();
   if (!user) {
