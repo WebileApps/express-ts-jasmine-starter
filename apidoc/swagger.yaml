@@ -191,10 +191,10 @@ paths:
       security:
         - access_token: []
   /admin/users/{id}:
-    put:
+    post:
       tags:
         - "Admin"
-      summary: "edits the user"
+      summary: "get the user"
       description: "should edited by super admin"
       operationId: "edit_user"
       parameters:
@@ -238,6 +238,12 @@ paths:
                   email:
                     type: "string"
                     example: "vivan@gmail.com"
+                  role:
+                    type: "string"
+                    example: "employee"
+                  reportee:
+                    type: "string"
+                    example: null
         400:
           description: "Invalid ID supplied"
         404:
@@ -270,6 +276,12 @@ paths:
                     email:
                       type: "string"
                       example: "vivan@gmail.com"
+                    role:
+                      type: "string"
+                      example: "employee"
+                    reportee:
+                      type: "string"
+                      example: null
         400:
           description: "Invalid ID supplied"
         404:
@@ -386,6 +398,9 @@ components:
         role:
           type: "string"
           example: "employee"
+        active:
+          type: boolean
+          example: true
         token:
           type: "string"
           example: null

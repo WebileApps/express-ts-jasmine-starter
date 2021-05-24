@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { UserModel } from "../users/users-model";
+import { Roles, UserModel } from "../users/users-model";
 const { Types } = require("mongoose");
 const jwt = require("jsonwebtoken");
 
@@ -9,9 +9,9 @@ export const decode = (token: string) => {
     if (err) {
       throw new Error("Failed to authenticate token.");
     }
-    decodedData =  decoded;
+    decodedData = decoded;
   });
-  return decodedData
+  return decodedData;
 };
 
 export const authorizeUser = async (req, res, next) => {
@@ -25,12 +25,15 @@ export const authorizeUser = async (req, res, next) => {
   try {
     if (token) {
       const { id }: any = decode(token);
-      const user = await getUserById(id);
-      if (!user) {
+      if (!id) {
         throw new Error(
-          JSON.stringify({ code: StatusCodes.FORBIDDEN, message: "Invalid user" })
+          JSON.stringify({
+            code: StatusCodes.FORBIDDEN,
+            message: "Invalid  Token",
+          })
         );
       }
+      req.user_id = id;
       next();
     } else {
       throw new Error(
@@ -41,11 +44,13 @@ export const authorizeUser = async (req, res, next) => {
       );
     }
   } catch (error) {
-    return res.status(StatusCodes.UNAUTHORIZED).send({message : error.message})
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .send({ message: error.message });
   }
 };
 
-const getUserById = async function (userId) {
+export const getUserById = async function (userId) {
   if (!Types.ObjectId.isValid(userId)) {
     return null;
   }
@@ -58,7 +63,17 @@ const getUserById = async function (userId) {
     .populate([{ path: "manager", select: "id name email" }])
     .exec();
   if (!user) {
-    throw new Error('No User Found.');
+    throw new Error("No User Found.");
   }
   return user;
+};
+
+export const ensureAdmin = async (req, res, next) => {
+  const adminInfo = await getUserById(req.user_id);
+  if (adminInfo.role !== Roles.SUPER_ADMIN) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .send("Not authorized to perform this action");
+  }
+  next();
 };
