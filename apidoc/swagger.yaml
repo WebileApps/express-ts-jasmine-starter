@@ -191,12 +191,12 @@ paths:
       security:
         - access_token: []
   /admin/users/{id}:
-    post:
+    get:
       tags:
         - "Admin"
       summary: "get the user"
       description: "should edited by super admin"
-      operationId: "edit_user"
+      operationId: "get_user"
       parameters:
         - name: "id"
           in: "path"
@@ -310,15 +310,9 @@ paths:
               schema:
                 type: "object"
                 properties:
-                  id:
-                    type: "integer"
-                    format: "int64"
-                  name:
+                  message:
                     type: "string"
-                    example: "Vivan"
-                  email:
-                    type: "string"
-                    example: "vivan@gmail.com"
+                    example: "User activated successfully"
         400:
           description: "Invalid ID supplied"
         404:
@@ -346,14 +340,9 @@ paths:
                 type: "object"
                 properties:
                   id:
-                    type: "integer"
-                    format: "int64"
-                  name:
+                  message:
                     type: "string"
-                    example: "Vivan"
-                  email:
-                    type: "string"
-                    example: "vivan@gmail.com"
+                    example: "User deactivated successfully"
         400:
           description: "Invalid ID supplied"
         404:
