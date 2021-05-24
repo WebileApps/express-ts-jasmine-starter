@@ -2,8 +2,8 @@ var { UserModel, Roles } = require("./users-model");
 var { Types } = require("mongoose");
 var { sign, verify } = require("jsonwebtoken");
 const { OAuth2Client } = require('google-auth-library');
-// const CLIENT_ID = require('../config/credentials').client_id
-// const client = new OAuth2Client(CLIENT_ID);
+const CLIENT_ID = require('../config/credentials').client_id
+const client = new OAuth2Client(CLIENT_ID);
 
 const JWT_TOKEN_EXPIRE_PERIOD = "60 days";
 const JWT_SECRET = "lms-api-1234#$"
@@ -23,7 +23,6 @@ const login = async function (event, context, callback) {
         if (!password) {
             throw new Error(JSON.stringify({ statusCode: 400, message: "No password entered" }));
         }
-        await getDB(null, context)
         const user = await UserModel.findOne(
             { email: email },
             {
@@ -56,9 +55,8 @@ const login = async function (event, context, callback) {
     }
 }
 
-const googleLogin = async function (event, context, callback) {
+export async function googleLogin(token) {
     try {
-        const { token } = JSON.parse(event.body);
         if (!token) {
             throw new Error(JSON.stringify({ statusCode: 400, message: "Token is required" }));
         }
@@ -72,7 +70,6 @@ const googleLogin = async function (event, context, callback) {
             throw new Error(JSON.stringify({ statusCode: 400, message: "ClientId Mismatched" }));
         }
         const email = payload['email']
-        await getDB(null, context)
         const user = await UserModel.findOne(
             { email: email, active: true }
         ).exec();
@@ -94,15 +91,12 @@ const googleLogin = async function (event, context, callback) {
         //   email: payload['email'],
         //   successMessage: `User logged in successfully`
         // }
-        return sendResponse(null, {
+        return {
             userInfo, token: await encode(user.id, (user).email, (user).role)
-        });
-        // return sendResponse(null, {
-        //   userInfo
-        // });
+        };
     } catch (error) {
-        const { statusCode, message } = JSON.parse(error.message)
-        return createErrorResponse(statusCode, message)
+        console.error(error);
+        throw error;
     }
 }
 
@@ -145,7 +139,6 @@ const decode = function (token) {
 }
 
 const createDeafultUser = async function () {
-    await getDB()
     const user = await UserModel.findOne({
         email: "webileadmin@webileapps.com"
     }).exec();
@@ -238,14 +231,5 @@ const checkFroManager = async function (userId) {
     //   throw new Error(JSON.stringify({ statusCode: 400, message: "No user found" }));
     // }
     return userWithSubEmployeeDetails;
-}
-module.exports = {
-    login,
-    getUserById,
-    editUserById,
-    createDeafultUser,
-    decode,
-    googleLogin,
-    getListOfManageUsers
 }
 

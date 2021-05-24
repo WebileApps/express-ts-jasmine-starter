@@ -14,6 +14,13 @@ export const decode = (token: string) => {
   return decodedData;
 };
 
+/**
+ * If Beader Authorization header exists, then validate and set req.user.
+ * @param req 
+ * @param res 
+ * @param next 
+ * @returns 
+ */
 export const authorizeUser = async (req, res, next) => {
   let token = null;
   if (req.headers && req.headers.authorization) {
@@ -33,16 +40,9 @@ export const authorizeUser = async (req, res, next) => {
           })
         );
       }
-      req.user_id = id;
-      next();
-    } else {
-      throw new Error(
-        JSON.stringify({
-          statusCode: 401,
-          message: "Unable to find auth headers",
-        })
-      );
+      req.user = await getUserById(id);
     }
+    next();
   } catch (error) {
     return res
       .status(StatusCodes.UNAUTHORIZED)
@@ -64,11 +64,27 @@ export const getUserById = async function (userId) {
 };
 
 export const ensureAdmin = async (req, res, next) => {
-  const adminInfo = await getUserById(req.user_id);
-  if (adminInfo.role !== Roles.SUPER_ADMIN) {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .send("Not authorized to perform this action");
-  }
-  next();
+  ensureUser(req, res, async (err) => {
+    try {
+      if (err) {
+        throw (err);
+      }
+      if (req.user.role !== Roles.SUPER_ADMIN) {
+        throw new Error("Need to be an admin to perform this action");
+      }
+      next();
+    } catch (error) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .send(error.message);
+    }
+  })
 };
+
+export function ensureUser(req, res, next) {
+  if (req.user) {
+    next();
+  } else {
+    next(new Error("Unauthorized"));
+  }
+}

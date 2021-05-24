@@ -5,6 +5,7 @@ import * as mongoose from "mongoose";
 const YAML = require('yamljs');
 import * as usersRouter from "./users/router";
 import * as adminRouter from "./admin/router";
+import { authorizeUser } from "./utils/auth";
 
 
 const app: Application = express();
@@ -20,6 +21,8 @@ mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology
         console.log("Failed connecting to database");
         console.error(err);
     });
+
+app.use(authorizeUser);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(express.json())
