@@ -17,8 +17,10 @@
             ],
             "env": {
                 "DB_URI": "mongodb://localhost/wa-users",
-                "JWT_SECRET" :"lms-api-1234#$"
-            }
+                "JWT_SECRET": "lms-api-1234#$"
+            },
+            "console": "internalConsole",
+            "outputCapture": "std"
         }
     ]
 }

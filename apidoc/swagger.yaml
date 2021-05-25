@@ -4,6 +4,7 @@ info:
   version: 1.0.0
   description: "Node.js application with typescript,javascript"
 servers:
+  - url: "http://lms-dev.webileapps.io/api/users"
   - url: "http://localhost:3000/api/v1"
     description: SwaggerHub API Auto Mocking-LOCAL
 tags:
