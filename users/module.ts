@@ -45,13 +45,11 @@ const login = async function (event, context, callback) {
             await user.save();
         }
         console.log(user.id)
-        return sendResponse(null, {
+        return {
             token: await encode(user.id, (user).email, (user).role)
-        });
+        }
     } catch (error) {
-        const { statusCode, message } = JSON.parse(error.message)
-        // const { statusCode, message } = error.message
-        return createErrorResponse(statusCode, message)
+        throw error;
     }
 }
 
