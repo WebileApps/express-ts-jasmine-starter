@@ -4,6 +4,7 @@ info:
   version: 1.0.0
   description: "Node.js application with typescript,javascript"
 servers:
+  - url: "http://lms-dev.webileapps.io/api/users"
   - url: "http://localhost:3000/api/v1"
     description: SwaggerHub API Auto Mocking-LOCAL
 tags:
@@ -30,47 +31,14 @@ paths:
                 token:
                   type: "string"
                   example: "uejicqysgxb93ns.mbjksx"
-                password:
-                  type: "string"
-                  example: "124sdf5#ca"
       responses:
         200:
           description: "successful operation"
           content:
             application/json:
               schema:
-                type: "object"
-                properties:
-                  id:
-                    type: "string"
-                    example: "1"
-                  token:
-                    type: "string"
-                    example: ""
-                  name:
-                    type: "string"
-                    example: "nagasai"
-                  reportee:
-                    type: "string"
-                    example: "1"
-                  role:
-                    type: "string"
-                    example: "employee"
-                  email:
-                    type: "string"
-                    example: "nagasai@webileapps.com"
-                  phone:
-                    type: "string"
-                    example: "1234567890"
-                  is_active:
-                    type: "boolean"
-                    example: true
-                  total_leaves:
-                    type: "number"
-                    example: 11
-                  available_leaves:
-                    type: "number"
-                    example: 1
+                allOf:
+                  - $ref: "#/components/schemas/User"
         400:
           description: "Invalid ID supplied"
         404:
@@ -101,6 +69,40 @@ paths:
                     type: "object"
                     example:
                       { 0: { id: "1", name: "L1" }, 1: { id: "2", name: "L2" } }
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "user not found"
+      security:
+        - access_token: []
+  /admin/login:
+    post:
+      tags:
+        - "Admin"
+      summary: "Admin login"
+      description: "Login as admin"
+      operationId: "admin_login"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "webileadmin@webileapps.com"
+                password:
+                  type: string
+                  example: webile@123
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/User"
         400:
           description: "Invalid ID supplied"
         404:
@@ -190,12 +192,12 @@ paths:
       security:
         - access_token: []
   /admin/users/{id}:
-    put:
+    get:
       tags:
         - "Admin"
-      summary: "edits the user"
+      summary: "get the user"
       description: "should edited by super admin"
-      operationId: "edit_user"
+      operationId: "get_user"
       parameters:
         - name: "id"
           in: "path"
@@ -237,6 +239,12 @@ paths:
                   email:
                     type: "string"
                     example: "vivan@gmail.com"
+                  role:
+                    type: "string"
+                    example: "employee"
+                  reportee:
+                    type: "string"
+                    example: null
         400:
           description: "Invalid ID supplied"
         404:
@@ -269,37 +277,18 @@ paths:
                     email:
                       type: "string"
                       example: "vivan@gmail.com"
+                    role:
+                      type: "string"
+                      example: "employee"
+                    reportee:
+                      type: "string"
+                      example: null
         400:
           description: "Invalid ID supplied"
         404:
           description: "No users"
       security:
         - access_token: []
-  /admin/users/sign-in:
-    post:
-      tags:
-        - "Admin"
-      summary: "This will login a user"
-      description: ""
-      operationId: "Logins a user"
-      responses:
-        "200":
-          $ref: "#/components/responses/Authentication"
-        "400":
-          description: "unable to signup please try again"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: "string"
-                  example: "vivan@gmail.com"
-                password:
-                  type: "string"
-                  example: "124sdf5#ca"
   /admin/users/activate/{id}:
     get:
       tags:
@@ -322,15 +311,9 @@ paths:
               schema:
                 type: "object"
                 properties:
-                  id:
-                    type: "integer"
-                    format: "int64"
-                  name:
+                  message:
                     type: "string"
-                    example: "Vivan"
-                  email:
-                    type: "string"
-                    example: "vivan@gmail.com"
+                    example: "User activated successfully"
         400:
           description: "Invalid ID supplied"
         404:
@@ -358,14 +341,9 @@ paths:
                 type: "object"
                 properties:
                   id:
-                    type: "integer"
-                    format: "int64"
-                  name:
+                  message:
                     type: "string"
-                    example: "Vivan"
-                  email:
-                    type: "string"
-                    example: "vivan@gmail.com"
+                    example: "User deactivated successfully"
         400:
           description: "Invalid ID supplied"
         404:
@@ -407,13 +385,16 @@ components:
         google-Id:
           type: "string"
           example: "IHJJH7JJJ"
-        password:
-          type: "string"
-          example: "IHJJH7JJJ"
         role:
           type: "string"
           example: "employee"
-        manager:
+        active:
+          type: boolean
+          example: true
+        token:
+          type: "string"
+          example: null
+        reportee:
           type: "string"
           example: "5shdgfa6asjdfv6sasdfgsid"
     Error:
