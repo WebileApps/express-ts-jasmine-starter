@@ -11,8 +11,12 @@ build_app:
   stage: build
   tags:
     - docker
+  before_script:
+    - npm install typescript --save-dev
   script:
     - npx tsc -p tsconfig.json --outDir dist --sourceMap false
+  after_script:
+    - cp package.json package-lock.json apidoc dist
   artifacts:
     name: "lms-users-dist"
     expire_in: 5 days
