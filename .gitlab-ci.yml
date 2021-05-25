@@ -1,0 +1,21 @@
+# References:
+# - https://docs.gitlab.com/ee/ci/yaml
+# - https://docs.gitlab.com/ee/ci/variables/README.html#list-all-environment-variables
+# - https://gitlab.com/jbardon/angular-app-pipeline/-/blob/master/.gitlab-ci.yml
+
+stages:
+  - build
+
+build_app:
+  image: node:12.20.0
+  stage: build
+  tags:
+    - docker
+  script:
+    - npx tsc -p tsconfig.json --outDir dist --sourceMap false
+  artifacts:
+    name: "lms-users-dist"
+    expire_in: 5 days
+    paths:
+      - dist
+
