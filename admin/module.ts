@@ -6,39 +6,34 @@ import { getUserById } from "../utils/auth";
 
 /**
  * Super Admin Login
- * @param req
- * @param res
- * @param next
- * @returns Promise<any>
+ * @param body
+ * @returns Promise<LoginPayload>
  */
-export async function login(req, res, next): Promise<any> {
-  const { email, password } = req.body;
+export async function login(body: LoginType): Promise<LoginPayload & AuthType> {
+  const { email, password } = body;
   const user = await UserModel.findOne({ email }).exec();
 
   if (!user || user?.role !== Roles.SUPER_ADMIN) {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .send({ message: "Invalid user" });
+    throw new Error("User not found");
   }
   let isPasswordValid = bcrypt.compareSync(password, user.password);
 
   if (!isPasswordValid) {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .send({ message: "Invalid Credintials" });
+    throw new Error("Invalid Credintials");
   }
 
   const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
     expiresIn: 24 * 60 * 60,
   });
+
   const { role, id, name } = user;
-  return res.status(StatusCodes.OK).send({
+  return {
     id,
     role,
     email,
     name,
     token: `Bearer ${token}`,
-  });
+  };
 }
 
 /**
@@ -63,49 +58,39 @@ export const createDeafultUser = async () => {
 
 /**
  * Creating User By Super Admin
- * @param req
- * @param res
- * @param next
- * @returns Promise<any>
+ * @param body
+ * @returns Promise<UserCreatePayload>
  */
-export const createUser = async (req, res, next): Promise<any> => {
-  const { name = "", email } = req.body;
+export const createUser = async (
+  body: UserCreateType
+): Promise<UserCreatePayload> => {
+  const { name = "", email } = body;
   try {
-    if (!email) {
-      throw new Error("Email id required to create user.");
-    }
+    if (!email) throw new Error("Email id required to create user.");
     const isUserExist = await UserModel.findOne({ email }).exec();
-    if (isUserExist) {
-      throw new Error("User already Exists");
-    }
+    if (isUserExist) throw new Error("User already Exists");
     const user = await UserModel.create([
       {
         name,
         email,
       },
     ]);
-    if (!user) {
-      return res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .send({ message: "Something went wrong." });
-    }
-    return res.status(StatusCodes.OK).send({ id: user.id });
+    if (!user.length) throw new Error("Something went wrong.");
+    return { id: user[0].id };
   } catch (err) {
-    return res.status(StatusCodes.BAD_REQUEST).send({ message: err.message });
+    throw err;
   }
 };
 
 /**
  * Fetching User list
- * @param req
- * @param res
- * @param next
- * @returns Promise<any>
+ * @param
+ * @returns Promise<UserPayload[]>
  */
-export const getUsers = async (req, res, next): Promise<any> => {
+export const getUsers = async (): Promise<UserPayload[]> => {
   try {
     const dbUsers = await UserModel.find({}).exec();
-    const users = dbUsers
+    const users: UserPayload[] = dbUsers
       .map((user) => {
         const { id, role, active, reportee, email, name } = user;
         return {
@@ -118,32 +103,25 @@ export const getUsers = async (req, res, next): Promise<any> => {
         };
       })
       .filter((user) => user.role !== Roles.SUPER_ADMIN);
-    return res.status(StatusCodes.OK).send(users);
+    return users;
   } catch (err) {
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send({ message: err.message });
+    throw err;
   }
 };
 
 /**
  * Fetch User By Id
- * @param req
- * @param res
- * @param next
- * @returns Promise<any>
+ * @param id
+ * @returns Promise<UserPayload>
  */
-export const getUserInfo = async (req, res, next): Promise<any> => {
+export const getUserInfo = async (id: string): Promise<UserPayload> => {
   try {
-    const { id } = req.params;
     const user = await getUserById(id);
     if (!user) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send({ message: "Invalid user id supplied" });
+      throw new Error("Invalid user id supplied");
     }
     const { role, active, reportee, email, name } = user;
-    const payload = {
+    return {
       id,
       role,
       active,
@@ -151,34 +129,24 @@ export const getUserInfo = async (req, res, next): Promise<any> => {
       email,
       name,
     };
-    return res.status(StatusCodes.OK).send(payload);
   } catch (err) {
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send({ message: err.message });
+    throw err;
   }
 };
 
 /**
  * Activate User By Super Admin
- * @param req
- * @param res
- * @param next
+ * @param id
  * @returns Promise<any>
  */
-export const activateUser = async (req, res, next): Promise<any> => {
+export const activateUser = async (id: string): Promise<any> => {
   try {
-    const { id } = req.params;
     const user = await getUserById(id);
     if (!user) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send({ message: "Invalid user id supplied" });
+      throw new Error("Invalid user id supplied");
     }
     if (!!user.active) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send({ message: "User is already in active state" });
+      throw new Error("User is already in active state");
     }
 
     const updateStatus = await UserModel.findOneAndUpdate(
@@ -190,38 +158,26 @@ export const activateUser = async (req, res, next): Promise<any> => {
         "Failed to activate user. Please try again after sometime "
       );
     }
-    return res
-      .status(StatusCodes.OK)
-      .send({ message: "User activated successfully" });
+    return { message: "User activated successfully" };
   } catch (err) {
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send({ message: err.message || "Somehthing went wrong" });
+    throw err;
   }
 };
 
 /**
  * Deactivate User By Super Admin
- * @param req
- * @param res
- * @param next
+ * @param id
  * @returns Promise<any>
  */
-export const deactivateUser = async (req, res, next): Promise<any> => {
+export const deactivateUser = async (id: string): Promise<any> => {
   try {
-    const { id } = req.params;
     const user = await getUserById(id);
     if (!user) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send({ message: "Invalid user id supplied" });
+      throw new Error("Invalid user id supplied");
     }
     if (!user.active) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send({ message: "User is already in deactivate state" });
+      throw new Error("User is already in deactivate state");
     }
-
     const updateStatus = await UserModel.findOneAndUpdate(
       { _id: id },
       { $set: { active: false } }
@@ -231,53 +187,40 @@ export const deactivateUser = async (req, res, next): Promise<any> => {
         "Failed to deactivate user. Please try again after sometime "
       );
     }
-    return res
-      .status(StatusCodes.OK)
-      .send({ message: "User deactivated successfully" });
+    return { message: "User deactivated successfully" };
   } catch (err) {
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send({ message: err.message || "Somehthing went wrong" });
+    throw err;
   }
 };
 
 /**
  * Assigning Reportee By Super Admin
- * @param req
- * @param res
- * @param next
+ * @param id
+ * @param body
  * @returns Promise<any>
  */
-export const assignReportee = async (req, res, next): Promise<any> => {
+export const assignReportee = async (
+  id: string,
+  body: AddReporteType
+): Promise<any> => {
   try {
-    const { id } = req.params;
-    const { reportee } = req.body;
-
+    const { reportee } = body;
     if (!reportee && !!reportee?.id) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send({ message: "Reportee is required" });
+      throw new Error("Reportee is required");
     }
     if (id === reportee.id) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send({ message: "Cannot assign user has own reportee" });
+      throw new Error("Cannot assign user has own reportee");
     }
-
     const [user, reporteeInfo] = await Promise.all([
       getUserById(id),
       getUserById(reportee.id),
     ]);
 
     if (!user) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send({ message: "Invalid user id supplied" });
+      throw new Error("Invalid user id supplied");
     }
     if (!reporteeInfo) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .send({ message: "Reportee not found" });
+      throw new Error("Reportee not found");
     }
 
     const updatedUserInfo = await UserModel.findOneAndUpdate(
@@ -285,14 +228,10 @@ export const assignReportee = async (req, res, next): Promise<any> => {
       { $set: { reportee: reportee.id } }
     );
     if (!updatedUserInfo) {
-      throw new Error("Unable assign reportee.Please try again");
+      throw new Error(" Unable assign reportee.Please try again");
     }
-    return res
-      .status(StatusCodes.OK)
-      .send({ message: "Reportee assigned successfully" });
+    return { message: "Reportee assigned successfully" };
   } catch (err) {
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send({ message: err.message || "Somehting went wrong" });
+    throw err;
   }
 };
