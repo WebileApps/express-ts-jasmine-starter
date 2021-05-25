@@ -2,6 +2,7 @@ const express = require("express");
 import { Application, NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import * as mongoose from "mongoose";
+import * as morgan from "morgan";
 const YAML = require('yamljs');
 import * as usersRouter from "./users/router";
 import * as adminRouter from "./admin/router";
@@ -21,6 +22,7 @@ mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology
         console.error(err);
     });
 
+app.use(morgan('common'));
 app.use(authorizeUser);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
