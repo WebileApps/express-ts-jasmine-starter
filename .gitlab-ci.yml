@@ -13,6 +13,7 @@ variables:
   IS_RELEASE_PIPELINE: "$CI_COMMIT_TAG"
   SSH_CONFIG: "webile"
   PM2_APP_NAME: "lms-dev-users"
+  REMOTE_PATH: "/home/ubuntu/lms/users"
 
 build_app:
   image: node:12.20.0
@@ -38,12 +39,12 @@ deploy_dev:
     - shell
   script:
     - ssh $SSH_CONFIG pm2 stop $PM2_APP_NAME
-    - ssh $SSH_CONFIG rm -rf /home/ubuntu/lms/users/*
+    - ssh $SSH_CONFIG rm -rf $REMOTE_PATH/*
     - echo "Deleted remote build"
-    - echo "Executing command scp -r $APP_OUTPUT_PATH/* $SSH_CONFIG:/home/ubuntu/lms/users"
-    - scp -r $APP_OUTPUT_PATH/* $SSH_CONFIG:/home/ubuntu/lms/users
-    - ssh $SSH_CONFIG ln -s /tmp/lms/users/node_modules /home/ubuntu/lms/users/node_modules
-    - ssh $SSH_CONFIG cd /home/ubuntu/lms/users && npm install
+    - echo "Executing command scp -r $APP_OUTPUT_PATH/* $SSH_CONFIG:$REMOTE_PATH"
+    - scp -r $APP_OUTPUT_PATH/* $SSH_CONFIG:$REMOTE_PATH
+    - ssh $SSH_CONFIG ln -s /tmp/lms/users/node_modules $REMOTE_PATH/node_modules
+    - ssh $SSH_CONFIG cd $REMOTE_PATH && npm install
     - ssh $SSH_CONFIG pm2 start $PM2_APP_NAME
   dependencies:
     - build_app
