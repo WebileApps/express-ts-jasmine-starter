@@ -5,6 +5,14 @@
 
 stages:
   - build
+  - deploy
+
+variables:
+  PROJECT_PATH: "$CI_PROJECT_DIR"
+  APP_OUTPUT_PATH: "$CI_PROJECT_DIR/users-build"
+  IS_RELEASE_PIPELINE: "$CI_COMMIT_TAG"
+  SSH_CONFIG: "webile"
+  PM2_APP_NAME: "lms-dev-users"
 
 build_app:
   image: node:12.20.0
@@ -14,12 +22,32 @@ build_app:
   before_script:
     - npm install typescript --save-dev
   script:
-    - npx tsc -p tsconfig.json --outDir dist --sourceMap false
+    - npx tsc -p tsconfig.json --outDir users-build --sourceMap false
   after_script:
-    - cp package.json package-lock.json apidoc dist
+    - cp -r package.json package-lock.json apidoc users-build
   artifacts:
     name: "lms-users-dist"
-    expire_in: 5 days
+    expire_in: 2 days
     paths:
-      - dist
+      - users-build
+
+deploy_dev:
+  stage: deploy
+  tags:
+  # runs on ci-webileapps-io.local server. This is a local server and not a domain.
+    - shell
+  script:
+    - ssh $SSH_CONFIG pm2 stop PM2_APP_NAME
+    - ssh $SSH_CONFIG rm -rf /home/ubuntu/lms/users/*
+    - echo "Deleted remote build"
+    - echo "Executing command scp -r $APP_OUTPUT_PATH/* $SSH_CONFIG:/home/ubuntu/lms/users"
+    - scp -r $APP_OUTPUT_PATH/* $SSH_CONFIG:/home/ubuntu/lms/users
+    - ssh $SSH_CONFIG ln -ls /tmp/lms/users/node_modules /home/ubuntu/lms/users/node_modules
+    - ssh $SSH_CONFIG cd /home/ubuntu/lms/users && npm install
+    - ssh $SSH_CONFIG pm2 start PM2_APP_NAME
+  dependencies:
+    - build_app
+  environment:
+    name: LMS-Users-Dev
+    url: https://lms-dev.webileapps.io/api/users/api-docs
 
