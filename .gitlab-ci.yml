@@ -42,7 +42,7 @@ deploy_dev:
     - echo "Deleted remote build"
     - echo "Executing command scp -r $APP_OUTPUT_PATH/* $SSH_CONFIG:/home/ubuntu/lms/users"
     - scp -r $APP_OUTPUT_PATH/* $SSH_CONFIG:/home/ubuntu/lms/users
-    - ssh $SSH_CONFIG ln -ls /tmp/lms/users/node_modules /home/ubuntu/lms/users/node_modules
+    - ssh $SSH_CONFIG ln -s /tmp/lms/users/node_modules /home/ubuntu/lms/users/node_modules
     - ssh $SSH_CONFIG cd /home/ubuntu/lms/users && npm install
     - ssh $SSH_CONFIG pm2 start $PM2_APP_NAME
   dependencies:
