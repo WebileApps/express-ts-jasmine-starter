@@ -37,14 +37,14 @@ deploy_dev:
   # runs on ci-webileapps-io.local server. This is a local server and not a domain.
     - shell
   script:
-    - ssh $SSH_CONFIG pm2 stop PM2_APP_NAME
+    - ssh $SSH_CONFIG pm2 stop $PM2_APP_NAME
     - ssh $SSH_CONFIG rm -rf /home/ubuntu/lms/users/*
     - echo "Deleted remote build"
     - echo "Executing command scp -r $APP_OUTPUT_PATH/* $SSH_CONFIG:/home/ubuntu/lms/users"
     - scp -r $APP_OUTPUT_PATH/* $SSH_CONFIG:/home/ubuntu/lms/users
     - ssh $SSH_CONFIG ln -ls /tmp/lms/users/node_modules /home/ubuntu/lms/users/node_modules
     - ssh $SSH_CONFIG cd /home/ubuntu/lms/users && npm install
-    - ssh $SSH_CONFIG pm2 start PM2_APP_NAME
+    - ssh $SSH_CONFIG pm2 start $PM2_APP_NAME
   dependencies:
     - build_app
   environment:
