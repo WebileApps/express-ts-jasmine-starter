@@ -32,7 +32,7 @@ app.use("/users", usersRouter);
 app.use("/admin", adminRouter);
 
 app.get("/", async (req, res, next) => {
-    res.status(StatusCodes.OK).send({ "message": "Users api" });
+    res.status(StatusCodes.OK).send('Hello from Users API. API Documentation can be found <a href="./api-docs/">here</a>');
 });
 
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
