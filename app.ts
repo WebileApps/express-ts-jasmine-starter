@@ -3,8 +3,6 @@ import { Application, NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import * as morgan from "morgan";
 import { load as loadYaml } from "yamljs";
-import * as usersRouter from "./users/router";
-import * as adminRouter from "./admin/router";
 import { authorizeUser } from "./utils/auth";
 import { APIError } from "./utils/api-error";
 import { connectToDatabase } from "./database";
@@ -41,8 +39,8 @@ app.use(express.json())
 /**
  * Routers for admin and employee users.
  */
-app.use("/users", usersRouter);
-app.use("/admin", adminRouter);
+// import * as usersRouter from "./users/router"
+// app.use("/users", usersRouter);
 
 /**
  * Root handler just for testing if the api is working.
