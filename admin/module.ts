@@ -40,20 +40,26 @@ export async function login(body: LoginType): Promise<LoginPayload & AuthType> {
  * Create default admin in database
  */
 export const createDeafultUser = async () => {
+  console.log('Startup funtion called')
   const user = await UserModel.findOne({
     email: "webileadmin@webileapps.com",
   }).exec();
   if (!user) {
-    await UserModel.create([
-      {
-        name: "webile admin",
-        email: "webileadmin@webileapps.com",
-        password: "webile@123",
-        role: Roles.SUPER_ADMIN,
-      },
-    ]);
-    console.log("Default admin and user created and wokrouts created");
+    try {
+      await UserModel.create([
+        {
+          name: "webile admin",
+          email: "webileadmin@webileapps.com",
+          password: "webile@123",
+          role: Roles.SUPER_ADMIN,
+        },
+      ]);
+      console.log('Admin created successfully')
+    } catch (err) {
+      throw new Error("Something went wrong");
+    }
   }
+
 };
 
 /**
