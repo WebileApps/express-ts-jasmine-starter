@@ -1,9 +1,9 @@
 import { createUser, getUsers } from "../../admin/module";
-import { startDBServer } from "../utils/server"
+import { startDBServer, stopDBServer } from "../utils/server"
 
 describe("User creation tests", () => {
     beforeAll(async () => {
-        startDBServer();
+        await startDBServer();
     })
 
     it("Should create a user", async () => {
@@ -15,5 +15,9 @@ describe("User creation tests", () => {
         expect(firstUser.id).not.toBeNull();
         expect(firstUser.name).toBe(testUserPayload.name);
         expect(firstUser.email).toBe(testUserPayload.email);
+    })
+
+    afterAll(async () => {
+        await stopDBServer();
     })
 })
