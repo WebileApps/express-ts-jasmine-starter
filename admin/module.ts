@@ -1,6 +1,5 @@
-import { StatusCodes } from "http-status-codes";
 import { Roles, UserModel } from "../users/users-model";
-const jwt = require("jsonwebtoken");
+import { sign as jwtSign } from "jsonwebtoken";
 import * as bcrypt from "bcryptjs";
 import { getUserById } from "../utils/auth";
 
@@ -22,7 +21,7 @@ export async function login(body: LoginType): Promise<LoginPayload & AuthType> {
     throw new Error("Invalid Credintials");
   }
 
-  const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+  const token = jwtSign({ id: user.id }, process.env.JWT_SECRET, {
     expiresIn: 24 * 60 * 60,
   });
 
