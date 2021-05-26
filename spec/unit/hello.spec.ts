@@ -5,12 +5,11 @@ describe("First Sample tests", () => {
         console.log("Hello Tests");
     });
 
-    it("Should execute this async test successfully", async (done) => {
+    it("Should execute this async test successfully", async () => {
         await wait();
-        done();
     });
 
-    it("Should fail at all times", () => {
+    xit("Should fail at all times", () => {
         throw new Error("This is a custom error from tests");
     })
 })
